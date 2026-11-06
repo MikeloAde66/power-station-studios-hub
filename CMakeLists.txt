@@ -24,14 +24,12 @@ juce_add_gui_app(PowerStationHub
 )
 
 target_sources(PowerStationHub PRIVATE
+    hub/Source/Main.cpp
     hub/Source/PowerStationStudioHub.h
     hub/Source/GraphRoutingHelpers.h
     hub/Source/PatchCableComponent.h
     hub/Source/PatchJackComponent.h
     hub/Source/PatchBayMatrixComponent.h
-    # NOTE: no Main.cpp exists yet — a GUI app needs a
-    # juce::JUCEApplication subclass + START_JUCE_APPLICATION entry point.
-    # Add hub/Source/Main.cpp before this target will actually build/run.
 )
 
 target_compile_definitions(PowerStationHub PRIVATE
@@ -70,12 +68,12 @@ juce_add_plugin(Turntable
 )
 
 target_sources(Turntable PRIVATE
+    products/turntable/Source/TurntablePluginProcessor.cpp
+    products/turntable/Source/TurntablePluginProcessor.h
+    products/turntable/Source/TurntablePluginEditor.cpp
+    products/turntable/Source/TurntablePluginEditor.h
     products/turntable/Source/TurntableComponent.h
     products/turntable/Source/InnerGrooveLossProcessor.h
-    # NOTE: no AudioProcessor/Editor .cpp exists yet — TurntableComponent.h
-    # is UI only and InnerGrooveLossProcessor.h is a DSP helper; neither is
-    # wired into an actual juce::AudioProcessor subclass yet. This target
-    # will not build until that glue exists.
 )
 
 target_compile_definitions(Turntable PRIVATE
@@ -101,13 +99,15 @@ juce_add_plugin(EightTrack
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     PLUGIN_MANUFACTURER_CODE Pwst
-    PLUGIN_CODE 8Trk
+    PLUGIN_CODE EtTk
 )
 
 target_sources(EightTrack PRIVATE
+    products/eight-track/Source/EightTrackPluginProcessor.cpp
+    products/eight-track/Source/EightTrackPluginProcessor.h
+    products/eight-track/Source/EightTrackPluginEditor.cpp
+    products/eight-track/Source/EightTrackPluginEditor.h
     products/eight-track/Source/EightTrackCartridgeEngine.h
-    # NOTE: same gap as Turntable — EightTrackCartridgeEngine.h is a
-    # processing helper, not a full juce::AudioProcessor yet.
 )
 
 target_compile_definitions(EightTrack PRIVATE

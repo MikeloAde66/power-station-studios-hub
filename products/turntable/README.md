@@ -6,18 +6,21 @@ presets.
 
 ## Status
 
-First-pass source landed in `Source/`, not yet compiled, wired into a
-JUCE project, or tested:
+Now a real (untested) JUCE plugin target via the root `CMakeLists.txt`:
 
-- `TurntableComponent.h` — platter rendering + tonearm animation (UI/visual
-  only, 60fps timer-driven)
-- `InnerGrooveLossProcessor.h` — DSP for inner-groove high-frequency loss,
-  not yet connected to the component above
-
-See the header comments in each file for the specific gaps (RPM switch
-not wired to UI, tonearm target position hardcoded, no pitch-bend gesture
-yet, DSP/UI progress not synced).
+- `TurntablePluginProcessor.h/.cpp` — `juce::AudioProcessor` wrapping
+  `InnerGrooveLossProcessor`. Playback `progress` is currently a
+  placeholder ramp (~3 min sweep), not real transport position — there's
+  no audio file loading/playback source yet.
+- `TurntablePluginEditor.h/.cpp` — hosts `TurntableComponent` (platter +
+  tonearm) with a plain Play/Stop button. No 33/45 switch, no album-art
+  loading, no noise-preset controls.
+- `TurntableComponent.h` — platter rendering + tonearm animation
+  (unchanged from first draft; RPM still not wired to a UI control,
+  tonearm target position still hardcoded).
+- `InnerGrooveLossProcessor.h` — unchanged from first draft.
 
 Not yet addressed: the procedural vinyl noise engine (dust/scratch/rumble
 impulse responses mixed pre-ApexStrip/ApexMaster) described in the
-original blueprint — no code for that yet.
+original blueprint — no code for that yet. Not built or run locally;
+needs verification in Xcode.
