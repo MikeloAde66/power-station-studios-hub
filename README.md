@@ -12,9 +12,23 @@ continues to ship and sell independently; nothing here changes that.
 
 ## Status
 
-Repo scaffold only. No implementation yet — structure first, build later,
-per the initial planning pass. Do not treat anything in here as a working
-build.
+Early draft source, not a working build. Landed so far:
+
+- `hub/Source/` — `juce::AudioProcessorGraph` host (`PowerStationStudioHub.h`),
+  manual patch-cable UI (`PatchCableComponent.h`, `PatchJackComponent.h`,
+  `PatchBayMatrixComponent.h`), and connection helpers plus a single
+  hardcoded example preset (`GraphRoutingHelpers.h`, explicitly NOT the
+  real AI routing engine)
+- `products/turntable/Source/` — platter/tonearm UI and inner-groove-loss
+  DSP
+- `products/eight-track/Source/` — program-switch engine with solenoid
+  click transient
+
+None of this has been compiled, assembled into a JUCE project (no
+CMakeLists/Projucer file exists yet), or tested. Each file's header
+comment lists what's missing before it's build-ready — see those for
+specifics rather than assuming anything here works end-to-end. The AI
+auto-routing engine itself is still unscoped; see `docs/ai-routing-design.md`.
 
 ## Planned layout
 
