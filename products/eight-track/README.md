@@ -13,12 +13,17 @@ Now a real (untested) JUCE plugin target via the root `CMakeLists.txt`:
   `EightTrackCartridgeEngine`. Passes audio through plus the solenoid
   click transient on program switch; does not yet play distinct audio
   per program.
-- `EightTrackPluginEditor.h/.cpp` — **placeholder UI only**: a button and
-  a "Program N / 4" label. No cartridge visual design exists yet (unlike
-  Turntable, which has a real component).
+- `EightTrackPluginEditor.h/.cpp` — hosts `EightTrackComponent`.
+- `EightTrackComponent.h` — real cosmetic design: wood-tone chassis,
+  cartridge slot, twin VU meters (L/R, needles driven by random jitter
+  while "powered" — cosmetic only, not reading actual signal level),
+  4-segment program indicator, transport button row. Power/Program
+  buttons are wired; Auto/Eject/Fwd/Pause are drawn and clickable but
+  not connected to anything.
 - `EightTrackCartridgeEngine.h` — unchanged from first draft.
 
 Not yet implemented: actual audio seek/playback tied to `programOffsets`
 (computed but unused), cross-talk bleed between adjacent stereo pairs
-(-36 dB per the original spec), and tape-wear high-frequency roll-off.
-Not built or run locally; needs verification in Xcode.
+(-36 dB per the original spec), tape-wear high-frequency roll-off, and
+real (non-cosmetic) VU metering. Confirmed building and running on macOS
+Sonoma 14.5 as of the last build check.

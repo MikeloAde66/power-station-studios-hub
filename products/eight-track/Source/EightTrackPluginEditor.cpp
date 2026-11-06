@@ -3,14 +3,23 @@
 EightTrackAudioProcessorEditor::EightTrackAudioProcessorEditor (EightTrackAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    addAndMakeVisible (switchProgramButton);
-    switchProgramButton.onClick = [this] { audioProcessor.switchProgram(); };
+    addAndMakeVisible (cartridgeView);
 
-    addAndMakeVisible (programLabel);
-    programLabel.setJustificationType (juce::Justification::centred);
-    programLabel.setFont (juce::Font (24.0f, juce::Font::bold));
+    cartridgeView.onSwitchProgram = [this]
+    {
+        audioProcessor.switchProgram();
+        cartridgeView.setCurrentProgram (audioProcessor.getCurrentCartridgeProgram());
+    };
 
-    setSize (300, 160);
+    cartridgeView.onPowerToggled = [this] (bool isPowered)
+    {
+        audioProcessor.setPowered (isPowered);
+        cartridgeView.setPlaying (isPowered);
+    };
+
+    cartridgeView.setCurrentProgram (audioProcessor.getCurrentCartridgeProgram());
+
+    setSize (520, 280);
     startTimerHz (10);
 }
 
@@ -21,14 +30,10 @@ void EightTrackAudioProcessorEditor::paint (juce::Graphics& g)
 
 void EightTrackAudioProcessorEditor::resized()
 {
-    auto bounds = getLocalBounds().reduced (12);
-    switchProgramButton.setBounds (bounds.removeFromBottom (36));
-    bounds.removeFromBottom (8);
-    programLabel.setBounds (bounds);
+    cartridgeView.setBounds (getLocalBounds());
 }
 
 void EightTrackAudioProcessorEditor::timerCallback()
 {
-    programLabel.setText ("Program " + juce::String (audioProcessor.getCurrentCartridgeProgram()) + " / 4",
-                           juce::dontSendNotification);
+    cartridgeView.setCurrentProgram (audioProcessor.getCurrentCartridgeProgram());
 }

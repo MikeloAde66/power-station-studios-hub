@@ -127,6 +127,7 @@ target_sources(EightTrack PRIVATE
     products/eight-track/Source/EightTrackPluginProcessor.h
     products/eight-track/Source/EightTrackPluginEditor.cpp
     products/eight-track/Source/EightTrackPluginEditor.h
+    products/eight-track/Source/EightTrackComponent.h
     products/eight-track/Source/EightTrackCartridgeEngine.h
 )
 

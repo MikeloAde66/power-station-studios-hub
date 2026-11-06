@@ -44,8 +44,14 @@ public:
     void switchProgram() { engine.switchProgram(); }
     int getCurrentCartridgeProgram() const { return engine.getCurrentProgram(); }
 
+    // Cosmetic power state only — does not gate processBlock(); the
+    // engine always processes. This just drives the UI's VU activity.
+    void setPowered (bool shouldBePowered) { isPowered = shouldBePowered; }
+    bool getPowered() const { return isPowered; }
+
 private:
     EightTrackCartridgeEngine engine;
+    bool isPowered = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EightTrackAudioProcessor)
 };

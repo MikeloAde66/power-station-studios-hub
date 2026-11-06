@@ -5,16 +5,22 @@ TurntableAudioProcessorEditor::TurntableAudioProcessorEditor (TurntableAudioProc
 {
     addAndMakeVisible (turntableView);
 
+    turntableView.onSpeedChanged = [this] (float rpm)
+    {
+        audioProcessor.setSpeedRpm (rpm);
+        turntableView.setPlaying (audioProcessor.getPlaying(), rpm);
+    };
+
     addAndMakeVisible (playStopButton);
     playStopButton.onClick = [this]
     {
         const bool nowPlaying = ! audioProcessor.getPlaying();
         audioProcessor.setPlaying (nowPlaying);
-        turntableView.setPlaying (nowPlaying);
+        turntableView.setPlaying (nowPlaying, audioProcessor.getSpeedRpm());
         playStopButton.setButtonText (nowPlaying ? "Stop" : "Play");
     };
 
-    setSize (420, 420);
+    setSize (640, 640);
     startTimerHz (30);
 }
 
@@ -36,5 +42,5 @@ void TurntableAudioProcessorEditor::timerCallback()
     // case playback is toggled from elsewhere (host automation, etc.) —
     // the progress value itself isn't pushed into the view yet, since
     // TurntableComponent.h's tonearm doesn't read a progress parameter.
-    turntableView.setPlaying (audioProcessor.getPlaying());
+    turntableView.setPlaying (audioProcessor.getPlaying(), audioProcessor.getSpeedRpm());
 }

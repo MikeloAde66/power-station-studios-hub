@@ -47,10 +47,14 @@ public:
     bool getPlaying() const { return isPlaying; }
     float getProgress() const { return progress; }
 
+    void setSpeedRpm (float rpm) { currentRpm = rpm; }
+    float getSpeedRpm() const { return currentRpm; }
+
 private:
     InnerGrooveLossProcessor innerGrooveProcessor;
     bool isPlaying = false;
     float progress = 0.0f; // 0 = outer groove, 1 = inner groove; placeholder ramp
+    float currentRpm = 33.333f;
     double currentSampleRate = 44100.0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TurntableAudioProcessor)
