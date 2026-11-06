@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 3.22)
 
+# Must be set BEFORE project() for the Xcode generator to respect it.
+# ASSUMPTION: 11.0 (Big Sur) as a conservative floor — it's the oldest
+# macOS that runs on Apple Silicon natively, and your build is arm64.
+# If your Mac is on an older macOS than whatever this was actually
+# failing against, tell me the exact version (About This Mac) and I'll
+# set this precisely instead of guessing a safe floor.
+if (NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS deployment target" FORCE)
+endif()
+
 project(PowerStationStudios VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
