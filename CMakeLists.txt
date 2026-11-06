@@ -21,6 +21,7 @@ add_subdirectory(JUCE)
 juce_add_gui_app(PowerStationHub
     PRODUCT_NAME "Power Station Studios"
     COMPANY_NAME "Power Station Studios"
+    BUNDLE_ID "com.powerstationstudios.hub"
 )
 
 target_sources(PowerStationHub PRIVATE
@@ -60,6 +61,7 @@ target_link_libraries(PowerStationHub PRIVATE
 juce_add_plugin(Turntable
     PRODUCT_NAME "Turntable"
     COMPANY_NAME "Power Station Studios"
+    BUNDLE_ID "com.powerstationstudios.turntable"
     FORMATS Standalone VST3 AU
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
@@ -95,6 +97,7 @@ target_link_libraries(Turntable PRIVATE
 juce_add_plugin(EightTrack
     PRODUCT_NAME "8-Track"
     COMPANY_NAME "Power Station Studios"
+    BUNDLE_ID "com.powerstationstudios.eighttrack"
     FORMATS Standalone VST3 AU
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
