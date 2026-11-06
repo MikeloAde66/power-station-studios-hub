@@ -24,6 +24,8 @@ juce_add_gui_app(PowerStationHub
     BUNDLE_ID "com.powerstationstudios.hub"
 )
 
+juce_generate_juce_header(PowerStationHub)
+
 target_sources(PowerStationHub PRIVATE
     hub/Source/Main.cpp
     hub/Source/PowerStationStudioHub.h
@@ -69,6 +71,8 @@ juce_add_plugin(Turntable
     PLUGIN_CODE Ttbl
 )
 
+juce_generate_juce_header(Turntable)
+
 target_sources(Turntable PRIVATE
     products/turntable/Source/TurntablePluginProcessor.cpp
     products/turntable/Source/TurntablePluginProcessor.h
@@ -104,6 +108,8 @@ juce_add_plugin(EightTrack
     PLUGIN_MANUFACTURER_CODE Pwst
     PLUGIN_CODE EtTk
 )
+
+juce_generate_juce_header(EightTrack)
 
 target_sources(EightTrack PRIVATE
     products/eight-track/Source/EightTrackPluginProcessor.cpp
