@@ -1,6 +1,15 @@
 // PatchBayMatrixComponent.h
 // Power Station Studios — central hub, patch bay UI
 //
+// SUPERSEDED by PatchBayGridComponent.h — Main.cpp no longer uses this.
+// Kept only for reference; also has a real bug PatchBayGridComponent
+// fixes: the mouseDrag/mouseUp overrides below never actually fire,
+// since a child jack's mouseDown captures the mouse for the rest of the
+// gesture and JUCE does not bubble drag/up events to the parent just
+// because the parent also defines those methods. Don't build on this
+// file — see PatchJackComponent.h's onJackDown/onJackDragged/onJackUp
+// callbacks for the fix.
+//
 // Parent component managing active cable drag state between jacks.
 //
 // Known gaps to resolve before this is build-ready:

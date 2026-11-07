@@ -9,7 +9,7 @@
 // something papered over here.
 
 #include <JuceHeader.h>
-#include "PatchBayMatrixComponent.h"
+#include "PatchBayGridComponent.h"
 #include "PatchBaySkinLookAndFeel.h"
 
 //==============================================================================
@@ -19,7 +19,7 @@ public:
     MainComponent()
     {
         addAndMakeVisible (patchBay);
-        setSize (900, 600);
+        setSize (1280, 760);
     }
 
     void resized() override
@@ -28,7 +28,7 @@ public:
     }
 
 private:
-    PatchBayMatrixComponent patchBay;
+    PatchBayGridComponent patchBay;
 };
 
 //==============================================================================

@@ -42,6 +42,7 @@ target_sources(PowerStationHub PRIVATE
     hub/Source/GraphRoutingHelpers.h
     hub/Source/PatchCableComponent.h
     hub/Source/PatchJackComponent.h
+    hub/Source/PatchBayGridComponent.h
     hub/Source/PatchBayMatrixComponent.h
     hub/Source/PatchBaySkinLookAndFeel.h
 )
