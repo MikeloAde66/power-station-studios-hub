@@ -19,9 +19,12 @@
 //     to the real EightTrackCartridgeEngine::setProgram in the
 //     processor). Options/Settings have callback hooks but no actual
 //     settings panel built yet.
-//   - Status message defaults to a feedback-loop warning string; no
-//     logic drives it dynamically yet (setStatusMessage() is ready for
-//     that).
+//   - Status strip is empty by default and only shows text via
+//     setStatusMessage(), which nothing calls yet. It must stay silent
+//     until a real state change warrants it -- it previously defaulted
+//     to a hardcoded "audio input is muted" warning shown on open
+//     before the user had done anything, which was wrong and has been
+//     removed.
 
 #pragma once
 #include <JuceHeader.h>
@@ -289,7 +292,14 @@ private:
     juce::TextButton optionsButton  { "Options" };
     juce::TextButton settingsButton { "Settings..." };
     juce::Rectangle<float> headerBounds, statusBounds;
-    juce::String statusMessage { "Audio input is muted to avoid feedback loop" };
+
+    // Empty by default -- this strip must stay silent until something
+    // real actually happens. It previously defaulted to a hardcoded
+    // "audio input is muted" warning that showed up the instant the
+    // plugin opened, before the user had done anything. Only
+    // setStatusMessage() should populate this, and only in response to
+    // an actual state change.
+    juce::String statusMessage;
 
     // Direct program-select row (text set in the constructor loop)
     juce::TextButton programButtons[4];
