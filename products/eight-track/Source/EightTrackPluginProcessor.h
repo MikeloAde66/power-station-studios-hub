@@ -42,6 +42,7 @@ public:
     void setStateInformation (const void*, int) override {}
 
     void switchProgram() { engine.switchProgram(); }
+    void setCartridgeProgram (int program1to4) { engine.setProgram (program1to4); }
     int getCurrentCartridgeProgram() const { return engine.getCurrentProgram(); }
 
     // Cosmetic power state only — does not gate processBlock(); the

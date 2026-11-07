@@ -19,9 +19,24 @@ EightTrackAudioProcessorEditor::EightTrackAudioProcessorEditor (EightTrackAudioP
         cartridgeView.setPlaying (isPowered);
     };
 
+    // Direct 1-4 selection from the program row, distinct from the
+    // cycling onSwitchProgram above -- both call into the same real
+    // EightTrackCartridgeEngine, just via setCartridgeProgram() instead
+    // of switchProgram().
+    cartridgeView.onProgramSelected = [this] (int program1to4)
+    {
+        audioProcessor.setCartridgeProgram (program1to4);
+        cartridgeView.setCurrentProgram (audioProcessor.getCurrentCartridgeProgram());
+    };
+
+    // No settings panel built yet -- these are stubs, an obvious place
+    // to hang one later.
+    cartridgeView.onOptionsClicked = [] {};
+    cartridgeView.onSettingsClicked = [] {};
+
     cartridgeView.setCurrentProgram (audioProcessor.getCurrentCartridgeProgram());
 
-    setSize (520, 280);
+    setSize (640, 420);
     startTimerHz (10);
 }
 

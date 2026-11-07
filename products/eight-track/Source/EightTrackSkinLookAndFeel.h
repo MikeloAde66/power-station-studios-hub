@@ -33,40 +33,56 @@ public:
     enum SkinTheme { VintageWalnut, IndustrialSteel };
 
     explicit EightTrackSkinLookAndFeel (SkinTheme initialTheme = VintageWalnut)
-        : currentTheme (initialTheme) {}
+        : currentTheme (initialTheme)
+    {
+        applyThemeDefaultColour();
+    }
 
-    void setTheme (SkinTheme newTheme) { currentTheme = newTheme; }
+    void setTheme (SkinTheme newTheme)
+    {
+        currentTheme = newTheme;
+        applyThemeDefaultColour();
+    }
+
     SkinTheme getTheme() const { return currentTheme; }
 
     // --- BUTTONS ---
+    // Originally this hardcoded one fixed colour pair per theme for every
+    // button, which meant a caller could never make one button look
+    // different from another (e.g. a highlighted "active program" button
+    // among otherwise identical ones) — the per-button backgroundColour
+    // JUCE already computes from button.findColour(buttonColourId) was
+    // being thrown away. Fixed to actually use it: callers that want the
+    // default theme look just don't set a custom colour (TextButton's
+    // buttonColourId falls back to this LookAndFeel's colour scheme,
+    // seeded per-theme in the constructor below), and callers that want a
+    // specific button to stand out call button.setColour(buttonColourId,
+    // ...) and this now honors it.
     void drawButtonBackground (juce::Graphics& g, juce::Button& button,
-                                const juce::Colour& /*backgroundColour*/,
-                                bool /*shouldDrawButtonAsHighlighted*/,
+                                const juce::Colour& backgroundColour,
+                                bool shouldDrawButtonAsHighlighted,
                                 bool shouldDrawButtonAsDown) override
     {
         auto bounds = button.getLocalBounds().toFloat().reduced (0.5f);
 
-        if (currentTheme == VintageWalnut)
-        {
-            g.setColour (shouldDrawButtonAsDown ? juce::Colour (0xFFC59B27) : juce::Colour (0xFFE5C158));
-            g.fillRoundedRectangle (bounds, 2.0f);
-            g.setColour (juce::Colour (0xFF4A3B00));
-            g.drawRoundedRectangle (bounds, 2.0f, 1.0f);
-        }
-        else // IndustrialSteel
-        {
-            g.setColour (shouldDrawButtonAsDown ? juce::Colour (0xFF1A1D24) : juce::Colour (0xFF2D323D));
-            g.fillRoundedRectangle (bounds, 2.0f);
-            g.setColour (juce::Colour (0xFF4A5568));
-            g.drawRoundedRectangle (bounds, 2.0f, 1.0f);
-        }
+        auto fill = backgroundColour;
+        if (shouldDrawButtonAsDown)
+            fill = fill.darker (0.3f);
+        else if (shouldDrawButtonAsHighlighted)
+            fill = fill.brighter (0.1f);
+
+        g.setColour (fill);
+        g.fillRoundedRectangle (bounds, 3.0f);
+        g.setColour (fill.darker (0.7f));
+        g.drawRoundedRectangle (bounds, 3.0f, 1.0f);
     }
 
     void drawButtonText (juce::Graphics& g, juce::TextButton& button,
                           bool /*shouldDrawButtonAsHighlighted*/, bool /*shouldDrawButtonAsDown*/) override
     {
         g.setFont (getLabelFont (button));
-        g.setColour (currentTheme == VintageWalnut ? juce::Colours::black : juce::Colours::white);
+        auto fill = button.findColour (juce::TextButton::buttonColourId);
+        g.setColour (fill.getPerceivedBrightness() > 0.55f ? juce::Colours::black : juce::Colours::white);
         g.drawFittedText (button.getButtonText(), button.getLocalBounds(), juce::Justification::centred, 1);
     }
 
@@ -95,5 +111,17 @@ public:
     }
 
 private:
+    // Sets this LookAndFeel's default TextButton colour so any button
+    // that hasn't been given an explicit per-button colour (via
+    // button.setColour(buttonColourId, ...)) still renders in the
+    // current theme's tone. Buttons that DO set their own colour (e.g.
+    // an "active program" highlight) override this per-instance.
+    void applyThemeDefaultColour()
+    {
+        setColour (juce::TextButton::buttonColourId,
+                   currentTheme == VintageWalnut ? juce::Colour (0xFFE5C158)
+                                                  : juce::Colour (0xFF2D323D));
+    }
+
     SkinTheme currentTheme;
 };

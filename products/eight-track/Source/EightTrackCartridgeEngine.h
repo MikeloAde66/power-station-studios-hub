@@ -35,6 +35,18 @@ public:
         triggerSolenoidTransient();
     }
 
+    // Jump directly to a program (1-4), e.g. from a numbered selector
+    // button rather than cycling through switchProgram(). Still fires
+    // the same solenoid click transient as a real head-shift would.
+    void setProgram (int program1to4)
+    {
+        int target = juce::jlimit (1, 4, program1to4) - 1;
+        if (target == currentProgram)
+            return;
+        currentProgram = target;
+        triggerSolenoidTransient();
+    }
+
     void processBlock (juce::AudioBuffer<float>& buffer)
     {
         // Inject physical mechanical solenoid click thud transient on program change

@@ -1,19 +1,27 @@
 // EightTrackComponent.h
 // Power Station Studios — 8-Track module
 //
-// Replaces the earlier placeholder editor (a bare button + text label)
-// with an actual cosmetic design: wood-top chassis, cartridge slot,
-// twin VU meters, and a transport button row — modeled on the general
-// shape of a classic console 8-track player, not a reproduction of any
-// specific branded unit's logo or livery.
+// Full chassis redesign (v2) matching the reference mockup's actual
+// layout: navy header strip ("8-Track" + Options), cream status strip
+// (status message + Settings), a row of 4 direct program-select
+// buttons, a housed meter panel (indicator light + twin VU meters) on
+// a wood body, and the gold transport button row along the bottom.
+// General vintage-8-track shape and function — no reproduction of any
+// specific branded unit's logo/livery.
 //
 // Known gaps:
 //   - VU needles are cosmetic only — driven by a random jitter while
 //     "playing", not by actual signal level. Real level metering would
 //     need peak/RMS measurement wired in from processBlock().
-//   - Power/Auto/Fast Fwd/Pause buttons are drawn and clickable but not
-//     wired to anything — only the cartridge-eject-style "Program"
-//     button is functional (calls onSwitchProgram).
+//   - Power/Auto/Fast Fwd/Pause/Options buttons are drawn and clickable
+//     but not wired to engine behavior beyond Power (toggles isPlaying)
+//     and the 4 program-select buttons (call onProgramSelected, wired
+//     to the real EightTrackCartridgeEngine::setProgram in the
+//     processor). Options/Settings have callback hooks but no actual
+//     settings panel built yet.
+//   - Status message defaults to a feedback-loop warning string; no
+//     logic drives it dynamically yet (setStatusMessage() is ready for
+//     that).
 
 #pragma once
 #include <JuceHeader.h>
@@ -23,16 +31,35 @@ class EightTrackComponent : public juce::Component, public juce::Timer
 public:
     EightTrackComponent()
     {
-        for (auto* b : { &powerButton, &autoButton, &ejectButton, &fastFwdButton, &pauseButton })
+        // --- Header ---
+        addAndMakeVisible (optionsButton);
+        optionsButton.onClick = [this] { if (onOptionsClicked) onOptionsClicked(); };
+
+        // --- Status strip ---
+        addAndMakeVisible (settingsButton);
+        settingsButton.onClick = [this] { if (onSettingsClicked) onSettingsClicked(); };
+
+        // --- Program select row (direct 1-4 selection) ---
+        for (int i = 0; i < 4; ++i)
         {
-            addAndMakeVisible (*b);
-            b->setColour (juce::TextButton::buttonColourId, juce::Colour::fromRGB (70, 68, 64));
-            b->setColour (juce::TextButton::textColourOffId, juce::Colours::whitesmoke);
+            auto& b = programButtons[i];
+            b.setButtonText (juce::String (i + 1));
+            b.setClickingTogglesState (false);
+            addAndMakeVisible (b);
+            b.onClick = [this, program = i + 1]
+            {
+                setCurrentProgram (program);
+                if (onProgramSelected)
+                    onProgramSelected (program);
+            };
         }
+        updateProgramButtonColours();
+
+        // --- Bottom transport row ---
+        for (auto* b : { &powerButton, &autoButton, &ejectButton, &fastFwdButton, &pauseButton })
+            addAndMakeVisible (*b);
 
         addAndMakeVisible (programButton);
-        programButton.setColour (juce::TextButton::buttonColourId, juce::Colour::fromRGB (150, 40, 36));
-        programButton.setColour (juce::TextButton::textColourOffId, juce::Colours::white);
         programButton.onClick = [this] { if (onSwitchProgram) onSwitchProgram(); };
 
         powerButton.setClickingTogglesState (true);
@@ -42,11 +69,21 @@ public:
     }
 
     std::function<void()> onSwitchProgram;
+    std::function<void (int program1to4)> onProgramSelected;
     std::function<void (bool isPowered)> onPowerToggled;
+    std::function<void()> onOptionsClicked;
+    std::function<void()> onSettingsClicked;
 
     void setCurrentProgram (int program1to4)
     {
         currentProgram = juce::jlimit (1, 4, program1to4);
+        updateProgramButtonColours();
+        repaint();
+    }
+
+    void setStatusMessage (const juce::String& message)
+    {
+        statusMessage = message;
         repaint();
     }
 
@@ -62,71 +99,149 @@ public:
 
     void resized() override
     {
-        auto bounds = getLocalBounds().reduced (14);
+        auto bounds = getLocalBounds();
 
-        auto buttonRow = bounds.removeFromBottom (40);
+        // Header strip
+        headerBounds = bounds.removeFromTop (40).toFloat();
+        auto headerInt = headerBounds.toNearestInt();
+        optionsButton.setBounds (headerInt.removeFromLeft (92).reduced (6, 7));
+
+        // Status strip
+        statusBounds = bounds.removeFromTop (36).toFloat();
+        auto statusInt = statusBounds.toNearestInt();
+        settingsButton.setBounds (statusInt.removeFromRight (112).reduced (6, 4));
+
+        bounds.removeFromTop (6); // accent-line gap
+
+        // Program select row
+        auto programRow = bounds.removeFromTop (44);
+        constexpr int btnW = 64, gap = 10;
+        auto row = programRow.withSizeKeepingCentre (btnW * 4 + gap * 3, 34);
+        for (int i = 0; i < 4; ++i)
+        {
+            programButtons[i].setBounds (row.removeFromLeft (btnW));
+            row.removeFromLeft (gap);
+        }
+
+        bounds.removeFromTop (10); // gap before meter panel
+
+        // Bottom transport row (reserved first so meter panel gets the rest)
+        auto buttonRow = bounds.removeFromBottom (48);
         int buttonWidth = buttonRow.getWidth() / 6;
-        powerButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (3));
-        autoButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (3));
-        ejectButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (3));
-        programButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (3));
-        fastFwdButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (3));
-        pauseButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (3));
+        powerButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (4));
+        autoButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (4));
+        ejectButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (4));
+        programButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (4));
+        fastFwdButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (4));
+        pauseButton.setBounds (buttonRow.removeFromLeft (buttonWidth).reduced (4));
+
+        meterPanelBounds = bounds.reduced (14, 6).toFloat();
     }
 
     void paint (juce::Graphics& g) override
     {
-        auto bounds = getLocalBounds().toFloat();
+        auto full = getLocalBounds().toFloat();
 
-        // Wood-tone top panel
-        juce::ColourGradient woodGradient (juce::Colour::fromRGB (92, 62, 40), bounds.getX(), bounds.getY(),
-                                            juce::Colour::fromRGB (62, 40, 26), bounds.getX(), bounds.getBottom(), false);
+        // Wood-tone body (base layer, behind the header/status strips)
+        juce::ColourGradient woodGradient (juce::Colour::fromRGB (92, 62, 40), full.getX(), full.getY(),
+                                            juce::Colour::fromRGB (62, 40, 26), full.getX(), full.getBottom(), false);
         g.setGradientFill (woodGradient);
-        g.fillRoundedRectangle (bounds, 8.0f);
+        g.fillAll();
 
-        // Brushed-metal face plate, inset from the wood edge
-        auto faceBounds = bounds.reduced (bounds.getWidth() * 0.04f, bounds.getHeight() * 0.18f);
-        g.setColour (juce::Colour::fromRGB (176, 176, 180));
-        g.fillRoundedRectangle (faceBounds, 4.0f);
-        g.setColour (juce::Colour::fromRGB (120, 120, 124));
-        g.drawRoundedRectangle (faceBounds.reduced (1.0f), 4.0f, 1.5f);
-
-        auto innerBounds = faceBounds.reduced (faceBounds.getWidth() * 0.03f, faceBounds.getHeight() * 0.08f);
-
-        // Cartridge slot (left third)
-        auto slotArea = innerBounds.removeFromLeft (innerBounds.getWidth() * 0.32f);
-        drawCartridgeSlot (g, slotArea);
-
-        innerBounds.removeFromLeft (innerBounds.getWidth() * 0.04f);
-
-        // VU meters (remaining area, split L/R)
-        auto vuArea = innerBounds;
-        auto leftMeterArea = vuArea.removeFromLeft (vuArea.getWidth() * 0.48f);
-        vuArea.removeFromLeft (vuArea.getWidth() * 0.08f);
-        auto rightMeterArea = vuArea;
-
-        drawVuMeter (g, leftMeterArea, leftVu, "L");
-        drawVuMeter (g, rightMeterArea, rightVu, "R");
-
-        // Program indicator (four segments, current one lit)
-        drawProgramIndicator (g, bounds);
+        drawHeader (g);
+        drawStatusStrip (g);
+        drawMeterPanel (g);
     }
 
 private:
-    void drawCartridgeSlot (juce::Graphics& g, juce::Rectangle<float> area)
+    // Sets each program-select button's own colour so the active one
+    // reads as "lit" (orange) and the rest stay slate. This has to be
+    // done via button.setColour() rather than drawn underneath the
+    // button in this component's paint() -- JUCE paints child
+    // components (the real TextButtons) on top of the parent's paint(),
+    // so anything drawn here for "under" the buttons would never be
+    // visible. EightTrackSkinLookAndFeel::drawButtonBackground now
+    // honors each button's own colour instead of hardcoding one colour
+    // for every button in the theme.
+    void updateProgramButtonColours()
+    {
+        for (int i = 0; i < 4; ++i)
+        {
+            bool isActive = (i + 1 == currentProgram);
+            programButtons[i].setColour (juce::TextButton::buttonColourId,
+                                          isActive ? juce::Colour (0xFFD9652B)
+                                                   : juce::Colour (0xFF3A3F47));
+        }
+    }
+
+    void drawHeader (juce::Graphics& g)
+    {
+        g.setColour (juce::Colour::fromRGB (42, 54, 62)); // navy
+        g.fillRect (headerBounds);
+
+        g.setColour (juce::Colours::white);
+        g.setFont (juce::Font (22.0f, juce::Font::bold));
+        g.drawText ("8-Track", headerBounds, juce::Justification::centred);
+    }
+
+    void drawStatusStrip (juce::Graphics& g)
+    {
+        g.setColour (juce::Colour::fromRGB (245, 239, 201)); // cream
+        g.fillRect (statusBounds);
+
+        auto textArea = statusBounds.reduced (16.0f, 0.0f).withTrimmedRight (120.0f);
+        g.setColour (juce::Colour::fromRGB (40, 36, 20));
+        g.setFont (juce::Font (16.0f));
+        g.drawFittedText (statusMessage, textArea.toNearestInt(), juce::Justification::centredLeft, 1);
+
+        // Accent line under the status strip
+        g.setColour (juce::Colour::fromRGB (196, 140, 60));
+        g.fillRect (statusBounds.getX(), statusBounds.getBottom(), statusBounds.getWidth(), 2.0f);
+    }
+
+    void drawMeterPanel (juce::Graphics& g)
+    {
+        auto panel = meterPanelBounds;
+
+        // Light-gray housing
+        g.setColour (juce::Colour::fromRGB (176, 176, 180));
+        g.fillRoundedRectangle (panel, 6.0f);
+        g.setColour (juce::Colour::fromRGB (120, 120, 124));
+        g.drawRoundedRectangle (panel.reduced (1.0f), 6.0f, 1.5f);
+
+        auto inner = panel.reduced (panel.getWidth() * 0.025f, panel.getHeight() * 0.06f);
+
+        // Indicator light (left third)
+        auto indicatorArea = inner.removeFromLeft (inner.getWidth() * 0.32f);
+        drawIndicatorLight (g, indicatorArea);
+
+        inner.removeFromLeft (inner.getWidth() * 0.04f);
+
+        // Twin VU meters (remaining area, split L/R)
+        auto leftMeterArea = inner.removeFromLeft (inner.getWidth() * 0.48f);
+        inner.removeFromLeft (inner.getWidth() * 0.08f);
+        auto rightMeterArea = inner;
+
+        drawVuMeter (g, leftMeterArea, leftVu, "L");
+        drawVuMeter (g, rightMeterArea, rightVu, "R");
+    }
+
+    void drawIndicatorLight (juce::Graphics& g, juce::Rectangle<float> area)
     {
         area = area.reduced (area.getWidth() * 0.08f, area.getHeight() * 0.12f);
 
         g.setColour (juce::Colours::black);
         g.fillRoundedRectangle (area, 3.0f);
 
-        // Inserted cartridge, partially visible
-        auto cartridge = area.reduced (area.getWidth() * 0.08f, area.getHeight() * 0.15f);
-        cartridge = cartridge.withHeight (cartridge.getHeight() * 0.7f);
-        g.setColour (juce::Colour::fromRGB (160, 40, 30));
-        g.fillRoundedRectangle (cartridge, 2.0f);
+        // Glowing red "cartridge loaded" indicator — brighter while playing
+        auto light = area.reduced (area.getWidth() * 0.1f, area.getHeight() * 0.18f);
+        light = light.withHeight (light.getHeight() * 0.62f);
+
+        float glow = isPlaying ? 1.0f : 0.55f;
+        g.setColour (juce::Colour::fromFloatRGBA (0.78f * glow, 0.18f * glow, 0.14f * glow, 1.0f));
+        g.fillRoundedRectangle (light, 2.0f);
         g.setColour (juce::Colours::black.withAlpha (0.4f));
-        g.drawRoundedRectangle (cartridge, 2.0f, 1.0f);
+        g.drawRoundedRectangle (light, 2.0f, 1.0f);
     }
 
     void drawVuMeter (juce::Graphics& g, juce::Rectangle<float> area, float level, const juce::String& label)
@@ -160,25 +275,6 @@ private:
         g.drawText (label, area.removeFromTop (area.getHeight() * 0.2f), juce::Justification::centred);
     }
 
-    void drawProgramIndicator (juce::Graphics& g, juce::Rectangle<float> fullBounds)
-    {
-        auto area = fullBounds.removeFromTop (fullBounds.getHeight() * 0.16f)
-                              .withSizeKeepingCentre (fullBounds.getWidth() * 0.4f, fullBounds.getHeight() * 0.1f);
-
-        float segmentWidth = area.getWidth() / 4.0f;
-        for (int i = 1; i <= 4; ++i)
-        {
-            auto segment = juce::Rectangle<float> (area.getX() + segmentWidth * (i - 1), area.getY(),
-                                                     segmentWidth - 4.0f, area.getHeight());
-            g.setColour (i == currentProgram ? juce::Colours::orangered : juce::Colour::fromRGB (60, 60, 64));
-            g.fillRoundedRectangle (segment, 2.0f);
-
-            g.setColour (juce::Colours::black);
-            g.setFont (juce::Font (segment.getHeight() * 0.6f, juce::Font::bold));
-            g.drawText (juce::String (i), segment, juce::Justification::centred);
-        }
-    }
-
     void timerCallback() override
     {
         if (isPlaying)
@@ -189,12 +285,25 @@ private:
         repaint();
     }
 
+    // Header / status strip
+    juce::TextButton optionsButton  { "Options" };
+    juce::TextButton settingsButton { "Settings..." };
+    juce::Rectangle<float> headerBounds, statusBounds;
+    juce::String statusMessage { "Audio input is muted to avoid feedback loop" };
+
+    // Direct program-select row (text set in the constructor loop)
+    juce::TextButton programButtons[4];
+
+    // Transport row
     juce::TextButton powerButton   { "Power" };
     juce::TextButton autoButton    { "Auto" };
     juce::TextButton ejectButton   { "Eject" };
     juce::TextButton programButton { "Program" };
     juce::TextButton fastFwdButton { "Fwd" };
     juce::TextButton pauseButton   { "Pause" };
+
+    // Meter panel
+    juce::Rectangle<float> meterPanelBounds;
 
     int currentProgram = 1;
     bool isPlaying = false;
