@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PatchBayMatrixComponent.h"
+#include "PatchBaySkinLookAndFeel.h"
 
 //==============================================================================
 class MainComponent : public juce::Component
@@ -66,12 +67,14 @@ public:
 
     void initialise (const juce::String&) override
     {
+        juce::LookAndFeel::setDefaultLookAndFeel (&patchBaySkin);
         mainWindow.reset (new MainWindow (getApplicationName()));
     }
 
     void shutdown() override
     {
-        mainWindow = nullptr;
+        mainWindow = nullptr; // destroy window (and its components) first
+        juce::LookAndFeel::setDefaultLookAndFeel (nullptr);
     }
 
     void systemRequestedQuit() override
@@ -80,6 +83,7 @@ public:
     }
 
 private:
+    PatchBaySkinLookAndFeel patchBaySkin;
     std::unique_ptr<MainWindow> mainWindow;
 };
 

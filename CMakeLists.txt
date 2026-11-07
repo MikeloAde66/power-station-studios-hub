@@ -43,6 +43,7 @@ target_sources(PowerStationHub PRIVATE
     hub/Source/PatchCableComponent.h
     hub/Source/PatchJackComponent.h
     hub/Source/PatchBayMatrixComponent.h
+    hub/Source/PatchBaySkinLookAndFeel.h
 )
 
 target_compile_definitions(PowerStationHub PRIVATE
