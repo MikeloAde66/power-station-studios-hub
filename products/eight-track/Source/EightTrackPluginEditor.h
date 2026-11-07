@@ -9,13 +9,14 @@
 #include <JuceHeader.h>
 #include "EightTrackPluginProcessor.h"
 #include "EightTrackComponent.h"
+#include "EightTrackSkinLookAndFeel.h"
 
 class EightTrackAudioProcessorEditor : public juce::AudioProcessorEditor,
                                         private juce::Timer
 {
 public:
     explicit EightTrackAudioProcessorEditor (EightTrackAudioProcessor&);
-    ~EightTrackAudioProcessorEditor() override = default;
+    ~EightTrackAudioProcessorEditor() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
@@ -24,6 +25,7 @@ private:
     void timerCallback() override;
 
     EightTrackAudioProcessor& audioProcessor;
+    EightTrackSkinLookAndFeel eightTrackSkin;
     EightTrackComponent cartridgeView;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EightTrackAudioProcessorEditor)

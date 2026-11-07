@@ -131,6 +131,7 @@ target_sources(EightTrack PRIVATE
     products/eight-track/Source/EightTrackPluginEditor.h
     products/eight-track/Source/EightTrackComponent.h
     products/eight-track/Source/EightTrackCartridgeEngine.h
+    products/eight-track/Source/EightTrackSkinLookAndFeel.h
 )
 
 target_compile_definitions(EightTrack PRIVATE

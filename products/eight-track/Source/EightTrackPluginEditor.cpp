@@ -3,6 +3,8 @@
 EightTrackAudioProcessorEditor::EightTrackAudioProcessorEditor (EightTrackAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
+    setLookAndFeel (&eightTrackSkin);
+
     addAndMakeVisible (cartridgeView);
 
     cartridgeView.onSwitchProgram = [this]
@@ -21,6 +23,11 @@ EightTrackAudioProcessorEditor::EightTrackAudioProcessorEditor (EightTrackAudioP
 
     setSize (520, 280);
     startTimerHz (10);
+}
+
+EightTrackAudioProcessorEditor::~EightTrackAudioProcessorEditor()
+{
+    setLookAndFeel (nullptr);
 }
 
 void EightTrackAudioProcessorEditor::paint (juce::Graphics& g)
